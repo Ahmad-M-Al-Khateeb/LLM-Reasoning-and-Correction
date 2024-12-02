@@ -47,6 +47,7 @@ def evaluate_model(subject = None):
     # Load the saved policy model
     print(f"Loading model from {config['policy_model_name']}...")
     policy_model = PolicyModel()
+    policy_model.model.eval()
 
     # Create DataLoader for the test dataset
     test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=16, shuffle=False)

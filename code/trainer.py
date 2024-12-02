@@ -36,11 +36,11 @@ class SCoRETrainer(Trainer):
         self.optimizer_config = {
                             "lr": self.config['lr'], 
                             "betas": (0.9, 0.999), 
-                            "eps": self.config['total_episodes'], 
+                            "eps": 1e-8, 
                             "weight_decay": 0.01
                             }
         self.scheduler_config = {
-                            "lr_lambda": lambda epoch: 0.95 ** epoch
+                            "lr_lambda": lambda epoch: 1
                             }
     
     def train(self):
@@ -49,7 +49,8 @@ class SCoRETrainer(Trainer):
         """
 
         accumulation_steps = self.config['gradient_accumulation_steps']
-        total_batches = len(self.get_dataloader()) * self.config['total_episodes']
+        batches_per_episode = min(len(self.get_dataloader()), self.config["batches_per_episode"])
+        total_batches =  batches_per_episode * self.config['total_episodes']
         accumulated_batch_size = self.config['batch_size'] * accumulation_steps
         epoch_pbar = tqdm(total=total_batches, desc="Training Progress")
 
@@ -71,6 +72,7 @@ class SCoRETrainer(Trainer):
                 total_first_attempt_reward = 0
                 total_second_attempt_reward = 0
 
+                batches_seen = 0
                 for batch_idx, (problems_batch, solutions_batch) in enumerate(self.get_dataloader()):
 
                     optimizer.zero_grad()
@@ -123,6 +125,10 @@ class SCoRETrainer(Trainer):
                     if (batch_idx + 1) % accumulation_steps == 0 or (batch_idx + 1) == len(self.get_dataloader()):
                         optimizer.step()
                         optimizer.zero_grad()
+
+                    batches_seen += 1
+                    if batches_seen >= self.config["batches_per_episode"]:
+                        break
 
                 # Statistics for Log
                 avg_kl_div = total_kl_div / len(self.get_dataloader())
@@ -251,6 +257,16 @@ class SCoRETrainer(Trainer):
 
             # Calculate second attempt rewards
             second_attempt_rewards = self.compute_rewards(second_decoded_completions, solutions_mini_batch)
+
+            # # Get the context length for slicing
+            # second_attempt_context_length = tokenized_second_prompts['input_ids'].shape[1]
+
+            # # Extract generated outputs
+            # second_attempt_generations = second_outputs[:, second_attempt_context_length:]
+
+            # # To find the number of tokens for each generated output
+            # num_generated_tokens = second_attempt_generations.shape[1]  # This gives the max tokens across all outputs
+            # print(num_generated_tokens)
 
             # Collect results from mini-batch
             all_first_attempt_kl_divs.append(first_attempt_kl_divs)
