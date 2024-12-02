@@ -8,33 +8,41 @@ import gc
 from utils import check_correct
 from config import config  # Import configurations
 
-def train_model():
+def train_model(subject = None):
     """
     Trains a policy model using the MATH dataset and the SCoRE reinforcement learning approach.
 
     """
 
     print("<===================================== Training ====================================>")
+    if subject:
+        print(f"Loading the {subject} train dataset...")
+    else:
+        print(f"Loading the entire train dataset...")
+
     #Instantiate Policy and Reference Models
     policy_model = PolicyModel()
     ref_model = PolicyModel()
 
     #Create Dataset
-    train_dataset = MATH()
+    train_dataset = MATH(subject=subject)
 
     #Instantiate trainer and initiate training
     trainer = SCoRETrainer(config, policy_model, ref_model, train_dataset)
     trainer.train()
 
-def evaluate_model():
+def evaluate_model(subject = None):
     """
     Evaluates the trained model on the test dataset.
     """
     print("<===================================== Testing ====================================>")
     
-    # Load the test dataset
-    print("Loading the test dataset...")
-    test_dataset = MATH(split='test')  # Assuming MATH dataset follows Hugging Face's Dataset structure.
+    if subject:
+        print(f"Loading the {subject} test dataset...")
+    else:
+        print(f"Loading the entire test dataset...")
+
+    test_dataset = MATH(split='test', subject=subject)
 
     # Load the saved policy model
     print(f"Loading model from {config['policy_model_name']}...")

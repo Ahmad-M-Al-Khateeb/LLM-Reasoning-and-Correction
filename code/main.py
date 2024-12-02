@@ -20,8 +20,9 @@ def set_seed(seed):
 def parse_arguments():
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', type=str,
-                        help='name of this task: train/generate', required=True)
+    parser.add_argument('-t', '--task', type=str,
+                        help='name of this task: train/evaluate/download', required=True)
+    parser.add_argument('-s', '--subject', type=str, help='name of math subject')
     return parser.parse_args()
 
 def print_selected_config(config):
@@ -56,10 +57,10 @@ if __name__ == '__main__':
                                 )
 
     elif args.task == 'train':
-        train_model()
+        train_model(args.subject)
 
     elif args.task == 'evaluate':
-        evaluate_model()        
+        evaluate_model(args.subject)        
     
     else:
         raise ValueError('Invalid Task')
