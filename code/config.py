@@ -5,6 +5,7 @@ config = {
     'log_dir' : 'logs/',
 
     'policy_model_name' : "ai-nexuz/llama-3.2-1b-instruct-fine-tuned",
+    'subject':"algebra",
 
     'seed' : 44,
     'batch_size' : 32,
