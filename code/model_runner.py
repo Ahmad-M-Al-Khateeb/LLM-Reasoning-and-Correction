@@ -8,7 +8,7 @@ import gc
 from utils import check_correct
 from config import config  # Import configurations
 
-def train_model(subject = None):
+def train_model(subject = ""):
     """
     Trains a policy model using the MATH dataset and the SCoRE reinforcement learning approach.
 
@@ -28,7 +28,7 @@ def train_model(subject = None):
     train_dataset = MATH(subject=subject)
 
     #Instantiate trainer and initiate training
-    trainer = SCoRETrainer(config, policy_model, ref_model, train_dataset)
+    trainer = SCoRETrainer(config, policy_model, ref_model, train_dataset, subject)
     trainer.train()
 
 def evaluate_model(subject = None):

@@ -7,14 +7,11 @@ class MATH(Dataset):
     Creates the Math Dataset from the JSON files and the base for the dataloader
     """
 
-    def __init__(self, split='train', subject=None):
+    def __init__(self, split='train', subject=""):
         parent_dir = os.path.join(os.getcwd(), os.pardir)
         data_dir = os.path.join(parent_dir, 'data/MATH')
         
-        if subject:
-            self.split_dir = os.path.join(data_dir, split, subject)
-        else:
-            self.split_dir = os.path.join(data_dir, split)
+        self.split_dir = os.path.join(data_dir, split, subject)
 
         if os.path.isdir(self.split_dir) == False:
             raise IOError(f"Invalid data directory: {self.split_dir}")

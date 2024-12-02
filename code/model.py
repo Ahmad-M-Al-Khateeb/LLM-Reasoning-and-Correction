@@ -100,11 +100,16 @@ class PolicyModel():
 
         return second_messages, prompts_tokenized
 
-    def save_model(self):
+    def save_model(self, subject):
         """
         Saves the model based on the save intervals.
         """
-        model_dir = config['save_dir']+'/SCoRE-' + config['policy_model_name'] + '-EPS-' + str(config['total_episodes'])
+        if subject:
+            subject = '-' + subject
+
+        model_dir = (config['save_dir']+'/SCoRE-' + config['policy_model_name'] +
+                    subject + '-EPS-' + str(config['total_episodes']))
+        
         parent_dir = os.path.join(os.getcwd(), os.pardir)
         save_dir = os.path.join(parent_dir, model_dir)
         self.model.save_pretrained(save_dir)

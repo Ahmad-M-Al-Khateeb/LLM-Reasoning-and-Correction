@@ -17,11 +17,12 @@ from torch.utils.data import DataLoader
 from utils import check_correct, truncate_response, first_true_indices, forward
 
 class SCoRETrainer(Trainer):
-    def __init__(self, config, policy_model, reference_model, train_dataset):
+    def __init__(self, config, policy_model, reference_model, train_dataset, subject):
         """
         Initializes the SCoRETrainer with configuration, policy and reference models, and dataset.
         """
         self.config = config
+        self.subject = subject
 
         policy_model.model.requires_grad_(True)
         self.policy_model = policy_model
@@ -145,7 +146,7 @@ class SCoRETrainer(Trainer):
         self.writer.close()
 
         #Save Model
-        self.policy_model.save_model()
+        self.policy_model.save_model(self.subject)
 
     def create_optimizer_and_scheduler(self, model, optimizer_config, scheduler_config):
         """
