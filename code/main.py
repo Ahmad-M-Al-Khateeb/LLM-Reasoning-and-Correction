@@ -22,7 +22,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task', type=str,
                         help='name of this task: train/evaluate/download', required=True)
-    parser.add_argument('-s', '--subject', type=str, help='name of math subject')
+    parser.add_argument('-s', '--subject', type=str, help='name of math subject',
+                        nargs='?', default="", const="")
     return parser.parse_args()
 
 def print_selected_config(config):
