@@ -45,7 +45,7 @@ def evaluate_model(subject = None):
     test_dataset = MATH(split='test', subject=subject)
 
     # Load the saved policy model
-    print(f"Loading model from {config['policy_model_name']}...")
+    print(f"Loading model from {config['load_dir']}...")
     policy_model = PolicyModel()
     policy_model.model.eval()
 
@@ -63,17 +63,18 @@ def evaluate_model(subject = None):
                                                                                 config['first_attempt_prompt'], 
                                                                                 problems_batch
                                                                                 )
+            first_attempt_context_length = tokenized_first_prompts['input_ids'].shape[1]
 
             # First attempt policy completions
             first_outputs, _ = policy_model.generate(
-                                                    tokenized_first_prompts['input_ids'].to(policy_model.device), 
-                                                    tokenized_first_prompts['attention_mask'].to(policy_model.device),
-                                                    **config['gen_kwargs']
-                                                    )
-                        
+                input_ids=tokenized_first_prompts['input_ids'], **config['gen_kwargs']
+            )
+            first_attempt_generations = first_outputs[:, first_attempt_context_length:]
             
             # decode first attempt outputs
-            first_decoded_completions = policy_model.tokenizer.batch_decode(first_outputs, skip_special_tokens=True) 
+            first_decoded_completions = policy_model.tokenizer.batch_decode(
+                first_attempt_generations, skip_special_tokens=True
+            )
 
             # check first attempt correctness
             t1_correct.extend(check_correct(first_decoded_completions, solutions_batch))
@@ -88,24 +89,26 @@ def evaluate_model(subject = None):
                                                                         first_decoded_completions, 
                                                                         config['second_attempt_prompt']
                                                                         )
+            second_attempt_context_length = tokenized_second_prompts['input_ids'].shape[1]
+            
             # second attempt policy completions
-            second_outputs, second_logits = policy_model.generate(
-                                        tokenized_second_prompts['input_ids'].to(policy_model.device),
-                                        tokenized_second_prompts['attention_mask'].to(policy_model.device),
-                                        **config['gen_kwargs']
-                                        )
+            second_outputs, _ = policy_model.generate(
+                input_ids=tokenized_second_prompts['input_ids'], **config['gen_kwargs']
+            )
+            second_attempt_generations = second_outputs[:, second_attempt_context_length:]
     
 
             del _, tokenized_second_prompts, first_messages, first_decoded_completions
 
             # decode second attempt outputs
-            second_decoded_completions = policy_model.tokenizer.batch_decode(second_outputs, skip_special_tokens=True)
-
+            second_decoded_completions = policy_model.tokenizer.batch_decode(
+                second_attempt_generations, skip_special_tokens=True
+            )
             # check second attempt correctness
             t2_correct.extend(check_correct(second_decoded_completions, solutions_batch))
 
             # Cleanup second attempt variables
-            del _, second_logits, second_outputs, second_decoded_completions
+            del second_outputs, second_decoded_completions
             gc.collect()
 
     # Evaluate predictions using an equivalence check or accuracy metric
@@ -129,7 +132,7 @@ def evaluate_model(subject = None):
         "total"      : total
     }
 
-    print(f"Evaluation Metrics:\nFirst attempt accuracy: {t1_acc:.2f}% ({t1_correct}/{total})")
-    print(f"Final Accuracy: {t2_acc:.2f}% ({t2_correct}/{total})")
+    print(f"Evaluation Metrics:\nFirst attempt accuracy: {t1_acc:.2f}% ({sum(t1_correct)}/{total})")
+    print(f"Second attempt Accuracy: {t2_acc:.2f}% ({sum(t2_correct)}/{total})")
     
     

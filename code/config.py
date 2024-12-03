@@ -1,7 +1,7 @@
 config = {
     'model_dir' : 'base_models/',
     'save_dir' : 'saved_models/',
-    'load_dir' : 'saved_models/[Add Complete Path]/',
+    'load_dir' : 'saved_models/SCoRE-ai-nexuz/llama-3.2-1b-instruct-fine-tuned-algebra-EPS-150',
     'log_dir' : 'logs/',
 
     'policy_model_name' : "ai-nexuz/llama-3.2-1b-instruct-fine-tuned",
