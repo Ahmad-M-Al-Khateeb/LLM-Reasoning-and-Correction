@@ -4,6 +4,7 @@ from dataset import MATH
 from model import PolicyModel
 from trainer import SCoRETrainer
 import gc
+from tqdm import tqdm
 
 from utils import check_correct
 from config import config  # Import configurations
@@ -46,7 +47,7 @@ def evaluate_model(subject = None):
 
     # Load the saved policy model
     print(f"Loading model from {config['load_dir']}...")
-    policy_model = PolicyModel()
+    policy_model = PolicyModel(config["load_dir"])
     policy_model.model.eval()
 
     # Create DataLoader for the test dataset
@@ -56,7 +57,7 @@ def evaluate_model(subject = None):
     t2_correct = []
 
     with torch.no_grad():
-        for problems_batch, solutions_batch in test_dataloader:
+        for problems_batch, solutions_batch in tqdm(test_dataloader):
             # Prepare inputs
             # First attempt template
             first_messages, tokenized_first_prompts = policy_model.prepare_first_attempt_input(
